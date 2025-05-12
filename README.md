@@ -56,11 +56,14 @@ A Model Context Protocol (MCP) server for Notion integration with Claude, allowi
    export NOTION_API_KEY=your_notion_api_key
    ```
 
-3. **Connect Notion Integration**: For each page you want to access via Claude, you need to share it with your integration:
-   - Open a Notion page
-   - Click "..." in the upper right corner
-   - Choose "Add connections"
-   - Select your integration
+3. **Connect Notion Integration to Pages**: For your integration to access private pages, you must explicitly share each page with your integration:
+   - Open the Notion page you want to access
+   - Click the "..." menu in the top-right corner
+   - Select "Add connections"
+   - Find and select your integration from the list
+   - Repeat this process for each page you want to access, or share a parent page to grant access to all nested pages
+
+   **Note**: Without this step, your integration will not be able to see or access private pages, even with the correct API key.
 
 ## Integration with Claude Desktop
 

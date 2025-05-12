@@ -409,4 +409,43 @@ export function registerNotionTools(server: McpServer, notionClient: NotionClien
       }
     }
   );
+
+  // Add a new tool to get all pages
+  server.tool(
+    'get-all-pages',
+    'Retrieve all pages from Notion that the integration has access to',
+    {
+      startCursor: z.string().optional().describe('Pagination cursor for getting the next batch of results'),
+      pageSize: z.number().min(1).max(100).optional().describe('Number of results to return per request (max 100)'),
+    },
+    async ({ startCursor, pageSize = 100 }) => {
+      try {
+        // Using search with empty query returns all pages the integration has access to
+        const results = await notionClient.search({
+          filter: {
+            value: 'page',
+            property: 'object'
+          },
+          page_size: pageSize,
+          start_cursor: startCursor
+        });
+        
+        return { 
+          content: [
+            { 
+              type: 'text', 
+              text: `Found ${results.results.length} pages. ${results.has_more ? 'More pages available.' : 'No more pages available.'}\n\n${JSON.stringify(results, null, 2)}` 
+            }
+          ] 
+        };
+      } catch (error) {
+        return { 
+          content: [{ 
+            type: 'text', 
+            text: `Error retrieving pages: ${error instanceof Error ? error.message : String(error)}` 
+          }] 
+        };
+      }
+    }
+  );
 } 
