@@ -16,6 +16,26 @@ if (!apiKey) {
 // Create Notion API client
 const notionClient = new NotionClient(apiKey);
 
+// Define which tools are enabled. By default, all are enabled.
+// To disable a tool, set its value to false.
+// Example: 'create-page': false
+const toolConfig: Record<string, boolean> = {
+	'get-current-user': true,
+	'list-users': true,
+	'search': true,
+	'get-page': true,
+	'create-page': true,
+	'get-database': true,
+	'create-database': true,
+	'query-database': true,
+	'get-block-children': true,
+	'append-block-children': true,
+	'get-comments': false,
+	'create-comment': false,
+	'get-all-pages': true,
+	// Add other tools here as they are created
+};
+
 // Create MCP server instance
 const server = new McpServer({
 	name: "notion",
@@ -27,7 +47,7 @@ const server = new McpServer({
 });
 
 // Register Notion tools
-registerNotionTools(server, notionClient);
+registerNotionTools(server, notionClient, toolConfig);
 
 // Start the server
 async function main() {
