@@ -1,6 +1,6 @@
-# Notion MCP for Claude
+# Notion MCP
 
-A Model Context Protocol (MCP) server for Notion integration with Claude, allowing Claude to interact with your Notion workspace.
+A Model Context Protocol (MCP) server for Notion integration.
 
 ## Features
 
@@ -15,7 +15,6 @@ A Model Context Protocol (MCP) server for Notion integration with Claude, allowi
 
 - Node.js (v18 or later)
 - A Notion integration with an API key
-- Claude Desktop app for using this MCP
 
 ## Installation
 

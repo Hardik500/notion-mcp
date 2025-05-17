@@ -5,7 +5,7 @@
     "notion-mcp": "./build/index.js"
   },
   "version": "1.0.0",
-  "description": "Notion MCP for Claude integration",
+  "description": "Notion MCP",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
@@ -17,9 +17,7 @@
   ],
   "keywords": [
     "notion",
-    "mcp",
-    "claude",
-    "anthropic"
+    "mcp"
   ],
   "author": "",
   "license": "ISC",
