@@ -2,6 +2,12 @@
 
 A Model Context Protocol (MCP) server for Notion integration.
 
+
+
+https://github.com/user-attachments/assets/053acb0b-e7d1-40ce-846d-76e142c636a9
+
+
+
 ## Features
 
 - **User Management**: Get information about users in your workspace
