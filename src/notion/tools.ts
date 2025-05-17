@@ -315,7 +315,11 @@ export function registerNotionTools(server: McpServer, notionClient: NotionClien
     },
     async ({ blockId, startCursor, pageSize }) => {
       try {
-        const blocks = await notionClient.getBlockChildren(blockId, startCursor, pageSize);
+        const params: { start_cursor?: string; page_size?: number } = {};
+        if (startCursor) params.start_cursor = startCursor;
+        if (pageSize) params.page_size = pageSize;
+        
+        const blocks = await notionClient.getBlockChildren(blockId, params);
         return { content: [{ type: 'text', text: JSON.stringify(blocks, null, 2) }] };
       } catch (error) {
         return {

@@ -43,16 +43,30 @@ export class NotionClient {
 
     try {
       const response = await fetch(url, options);
+      const data = await response.json();
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Notion API error: ${response.status} - ${JSON.stringify(errorData)}`);
+        // Enhanced error handling with more details
+        const error = new Error(
+          `Notion API error: ${response.status} - ${data.message || JSON.stringify(data)}\n` +
+          `Endpoint: ${endpoint}\n` +
+          `Request ID: ${data.request_id || 'unknown'}`
+        );
+        console.error('Notion API Error Details:', {
+          status: response.status,
+          endpoint,
+          error: data,
+          requestId: data.request_id
+        });
+        throw error;
       }
       
-      return await response.json() as T;
+      return data as T;
     } catch (error) {
-      console.error('Error in Notion API request:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`Unexpected error in Notion API request: ${error}`);
     }
   }
 
@@ -95,10 +109,31 @@ export class NotionClient {
     return this.request<NotionResponse.SearchResults>('/v1/search', 'POST', params);
   }
 
+  private validateUUID(uuid: string): string {
+    if (!uuid) {
+      throw new Error('Notion ID cannot be empty');
+    }
+    
+    // Remove any quotes, whitespace, and normalize dashes
+    uuid = uuid.trim().replace(/['"]/g, '').replace(/\s/g, '');
+    
+    // Remove all dashes first
+    const cleanUuid = uuid.replace(/-/g, '');
+    
+    // Check if it's a 32-character hexadecimal string
+    if (!/^[0-9a-f]{32}$/i.test(cleanUuid)) {
+      throw new Error(`Invalid Notion ID format: ${uuid}. Expected a 32-character hexadecimal string.`);
+    }
+    
+    // Return properly formatted UUID
+    return `${cleanUuid.slice(0,8)}-${cleanUuid.slice(8,12)}-${cleanUuid.slice(12,16)}-${cleanUuid.slice(16,20)}-${cleanUuid.slice(20)}`;
+  }
+
   /**
    * Retrieves a page by ID
    */
   async getPage(pageId: string) {
+    pageId = this.validateUUID(pageId);
     return this.request<NotionResponse.Page>(`/v1/pages/${pageId}`);
   }
 
@@ -112,6 +147,12 @@ export class NotionClient {
     icon?: any;
     cover?: any;
   }) {
+    // Validate UUID if parent is a page
+    if (params.parent.type === 'page_id') {
+      params.parent.page_id = this.validateUUID(params.parent.page_id);
+    } else if (params.parent.type === 'database_id') {
+      params.parent.database_id = this.validateUUID(params.parent.database_id);
+    }
     return this.request<NotionResponse.Page>('/v1/pages', 'POST', params);
   }
 
@@ -124,6 +165,7 @@ export class NotionClient {
     icon?: any;
     cover?: any;
   }) {
+    pageId = this.validateUUID(pageId);
     return this.request<NotionResponse.Page>(`/v1/pages/${pageId}`, 'PATCH', params);
   }
 
@@ -171,13 +213,9 @@ export class NotionClient {
   /**
    * Retrieves a block's children
    */
-  async getBlockChildren(blockId: string, startCursor?: string, pageSize = 100) {
-    const query = new URLSearchParams();
-    if (startCursor) query.set('start_cursor', startCursor);
-    if (pageSize) query.set('page_size', pageSize.toString());
-    
-    const queryString = query.toString() ? `?${query}` : '';
-    return this.request<NotionResponse.ListBlocks>(`/v1/blocks/${blockId}/children${queryString}`);
+  async getBlockChildren(blockId: string, params?: { start_cursor?: string; page_size?: number }) {
+    blockId = this.validateUUID(blockId);
+    return this.request<NotionResponse.ListBlocks>(`/v1/blocks/${blockId}/children`, 'GET', params);
   }
 
   /**
